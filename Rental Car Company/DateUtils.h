@@ -13,11 +13,14 @@ public:
     // Adds days to a given date string in YYYY-MM-DD format
     static std::string addDays(const std::string& dateStr, int daysToAdd);
 
-    // Validates if a date string is in YYYY-MM-DD format and is a valid date
-    static bool isValidDate(const std::string& dateStr);
-
     // Gets the current date in YYYY-MM-DD format
     static std::string getCurrentDate();
+
+    // Calculates the difference in days between two dates in YYYY-MM-DD format
+    static int calculateDaysLate(const std::string& dueDate, const std::string& returnDate);
+
+    // Validates if a date string is in YYYY-MM-DD format and is a valid date
+    static bool isValidDate(const std::string& dateStr);
 
     // Calculates the difference in days between two dates in YYYY-MM-DD format
     static int daysDifference(const std::string& dueDateStr, const std::string& returnDateStr);

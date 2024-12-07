@@ -19,6 +19,7 @@ private:
     int customerID;
     std::string name;
     std::vector<RentalInfo> rentedVehicles;
+    int loyaltyPoints; // Add loyalty points counter
 
 public:
     // Constructor
@@ -28,6 +29,7 @@ public:
     int getCustomerID() const;
     std::string getName() const;
     std::vector<RentalInfo> getRentedVehicles() const;
+    int getLoyaltyPoints() const; // Add getter for loyalty points
 
     // Rent a vehicle
     void rentVehicle(const std::shared_ptr<Vehicle>& vehicle, const std::string& rentDate, const std::string& dueDate);
@@ -40,6 +42,12 @@ public:
 
     // Check if customer has rented a specific vehicle
     bool hasRentedVehicle(const std::shared_ptr<Vehicle>& vehicle) const;
+
+    // Apply loyalty discount
+    bool applyLoyaltyDiscount(); // Add method to apply loyalty discount
+
+    // Method to add a RentalInfo directly
+    void addRental(const RentalInfo& rental);
 };
 
 #endif // CUSTOMER_H

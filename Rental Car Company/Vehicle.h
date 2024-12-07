@@ -17,12 +17,14 @@ protected:
 
 public:
     // Constructors
-    Vehicle();
     Vehicle(const std::string& id, const std::string& mk, const std::string& mdl,
             int passengers, int storage, bool avail);
 
     // Destructor
     virtual ~Vehicle();
+
+    // Virtual function to be overridden by derived classes
+    virtual void displayVehicle() const = 0;
 
     // Getters
     std::string getVehicleID() const;
@@ -36,9 +38,6 @@ public:
     // Setters
     void setAvailability(bool avail);
     void setLateFee(double fee);
-
-    // Virtual function to display vehicle details
-    virtual void displayVehicle() const = 0;
 };
 
 #endif // VEHICLE_H

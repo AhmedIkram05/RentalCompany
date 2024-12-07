@@ -1,14 +1,10 @@
 // Vehicle.cpp
 #include "Vehicle.h"
 
-// Default Constructor
-Vehicle::Vehicle()
-    : vehicleID(""), make(""), model(""), passengers(0), capacity(0), availability(true), lateFee(0.0) {}
-
 // Parameterized Constructor
-Vehicle::Vehicle(const std::string& id, const std::string& mk, const std::string& mdl, 
-               int passengersCount, int storage, bool avail)
-    : vehicleID(id), make(mk), model(mdl), passengers(passengersCount), capacity(storage), availability(avail), lateFee(0.0) {}
+Vehicle::Vehicle(const std::string& id, const std::string& mk, const std::string& mdl,
+                 int passengers, int storage, bool avail)
+    : vehicleID(id), make(mk), model(mdl), passengers(passengers), capacity(storage), availability(avail), lateFee(0.0) {}
 
 // Destructor
 Vehicle::~Vehicle() {}

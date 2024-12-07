@@ -7,23 +7,16 @@
 #include <cmath>
 
 // Adds days to a given date string in YYYY-MM-DD format
-std::string DateUtils::addDays(const std::string& dateStr, int daysToAdd) {
-    std::tm tm = DateUtils::stringToTm(dateStr);
-
-    // Convert to time_t and add days
-    tm.tm_mday += daysToAdd;
-    time_t time = std::mktime(&tm);
-    if (time == -1) {
-        throw std::runtime_error("Failed to convert and add days to date: " + dateStr);
-    }
-
-    // Convert back to string
-    std::tm* newTm = std::localtime(&time);
-    if (!newTm) {
-        throw std::runtime_error("Failed to retrieve localtime.");
-    }
+std::string DateUtils::addDays(const std::string& date, int days) {
+    std::tm tm = {};
+    std::istringstream iss(date);
+    iss >> std::get_time(&tm, "%Y-%m-%d");
+    auto tp = std::chrono::system_clock::from_time_t(std::mktime(&tm));
+    tp += std::chrono::hours(24 * days);
+    std::time_t new_time = std::chrono::system_clock::to_time_t(tp);
+    std::tm new_tm = *std::localtime(&new_time);
     std::ostringstream oss;
-    oss << std::put_time(newTm, "%Y-%m-%d");
+    oss << std::put_time(&new_tm, "%Y-%m-%d");
     return oss.str();
 }
 
@@ -40,13 +33,10 @@ bool DateUtils::isValidDate(const std::string& dateStr) {
 // Gets the current date in YYYY-MM-DD format
 std::string DateUtils::getCurrentDate() {
     auto now = std::chrono::system_clock::now();
-    std::time_t now_time = std::chrono::system_clock::to_time_t(now);
-    std::tm* now_tm = std::localtime(&now_time);
-    if (!now_tm) {
-        throw std::runtime_error("Failed to retrieve current local time.");
-    }
+    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+    std::tm now_tm = *std::localtime(&now_c);
     std::ostringstream oss;
-    oss << std::put_time(now_tm, "%Y-%m-%d");
+    oss << std::put_time(&now_tm, "%Y-%m-%d");
     return oss.str();
 }
 
@@ -75,4 +65,18 @@ std::tm DateUtils::stringToTm(const std::string& dateStr) {
         throw std::runtime_error("Failed to parse date: " + dateStr);
     }
     return tm;
+}
+
+// Calculates the difference in days between two dates in YYYY-MM-DD format
+int DateUtils::calculateDaysLate(const std::string& dueDate, const std::string& returnDate) {
+    std::tm due_tm = {};
+    std::tm return_tm = {};
+    std::istringstream iss_due(dueDate);
+    std::istringstream iss_return(returnDate);
+    iss_due >> std::get_time(&due_tm, "%Y-%m-%d");
+    iss_return >> std::get_time(&return_tm, "%Y-%m-%d");
+    auto due_tp = std::chrono::system_clock::from_time_t(std::mktime(&due_tm));
+    auto return_tp = std::chrono::system_clock::from_time_t(std::mktime(&return_tm));
+    auto duration = std::chrono::duration_cast<std::chrono::hours>(return_tp - due_tp).count();
+    return duration / 24;
 }

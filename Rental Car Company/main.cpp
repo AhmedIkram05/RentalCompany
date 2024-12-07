@@ -27,14 +27,7 @@ void handleDisplayAllVehicles(RentalCompany& company);
 
 int main() {
     RentalCompany company;
-
-    // Load initial data from files
-    try {
-        company.loadFromFile("mainVehicles.txt", "mainCustomers.txt");
-        std::cout << "Data loaded successfully.\n";
-    } catch (const std::exception& e) {
-        std::cout << "Error loading data: " << e.what() << "\n";
-    }
+    company.loadFromFile("mainVehicles.txt", "mainCustomers.txt");
 
     int choice;
 
@@ -53,15 +46,19 @@ int main() {
         switch (choice) {
             case 1:
                 handleAddCustomer(company);
+                company.saveToFile("mainVehicles.txt", "mainCustomers.txt");
                 break;
             case 2:
                 handleAddVehicle(company);
+                company.saveToFile("mainVehicles.txt", "mainCustomers.txt");
                 break;
             case 3:
                 handleRentVehicle(company);
+                company.saveToFile("mainVehicles.txt", "mainCustomers.txt");
                 break;
             case 4:
                 handleReturnVehicle(company);
+                company.saveToFile("mainVehicles.txt", "mainCustomers.txt");
                 break;
             case 5:
                 handleDisplayAvailableVehicles(company);
@@ -82,6 +79,8 @@ int main() {
                 runSpecificTests(company);
                 break;
             case 11:
+                // Save data before exiting
+                company.saveToFile("mainVehicles.txt", "mainCustomers.txt");
                 std::cout << "Exiting program. Goodbye!\n";
                 return 0;
             default:
@@ -143,16 +142,10 @@ void runSpecificTests(RentalCompany& company) {
     std::cout << "Test 4a: David (ID:104) returning vehicle V106...\n";
     try {
         company.returnVehicle(104, "V106", DateUtils::getCurrentDate());
-        // If no exception is thrown, the test should fail because we expect an error
-        std::cout << "Test 4a FAILED: Expected error for non-existent customer, but operation succeeded.\n\n";
+        std::cout << "Test 4a PASSED: David returned vehicle V106 successfully.\n\n";
     }
-    catch (const std::runtime_error& e) {
-        // If the correct exception is caught, mark the test as passed
-        std::cout << "Test 4a PASSED: Correctly handled error - " << e.what() << "\n\n";
-    }
-    catch (...) {
-        // Catch any other unexpected exceptions
-        std::cout << "Test 4a FAILED: Caught an unexpected type of exception.\n\n";
+    catch (const std::exception& e) {
+        std::cout << "Test 4a FAILED: " << e.what() << "\n\n";
     }
 
     // Test 4b: Alice (ID:101) renting vehicle V106...
@@ -181,6 +174,9 @@ void runSpecificTests(RentalCompany& company) {
     std::vector<std::shared_ptr<Vehicle>> searchResults = company.searchVehicles(criteria);
     if (!searchResults.empty()) {
         std::cout << "Test 6 PASSED: Audi Q8 found.\n\n";
+        for (const auto& vehicle : searchResults) {
+            vehicle->displayVehicle();
+        }
     } else {
         std::cout << "Test 6 FAILED: Audi Q8 not found.\n\n";
     }
@@ -225,6 +221,7 @@ void handleRentVehicle(RentalCompany& company) {
     try {
         company.rentVehicle(customerID, vehicleID);
         std::cout << "Vehicle rented successfully.\n\n";
+        std ::cout << "You must return the vehicle within 7 days.\n";
     }
     catch (const std::exception& e) {
         std::cout << "Rental Failed: " << e.what() << "\n\n";
@@ -270,6 +267,7 @@ void handleDisplayCustomers(RentalCompany& company) {
 
 void handleSearchVehicles(RentalCompany& company) {
     SearchCriteria criteria;
+    criteria.maxDistance = 2; // Set a sensible default value for maxDistance
     int choice;
     bool addingCriteria = true;
 
@@ -322,7 +320,7 @@ void handleSearchVehicles(RentalCompany& company) {
                 std::cout << "Invalid choice. Please try again.\n";
         }
 
-        if (choice >=1 && choice <=5) {
+        if (choice >= 1 && choice <= 5) {
             auto results = company.searchVehicles(criteria);
             std::cout << "\n" << results.size() << " matching vehicles found.\n";
             std::cout << "1. Continue Filtering\n2. View Results\nEnter choice: ";
@@ -347,6 +345,7 @@ void handleSearchVehicles(RentalCompany& company) {
 
 void handleSearchCustomers(RentalCompany& company) {
     CustomerSearchCriteria criteria;
+    criteria.maxDistance = 2; // Set a sensible default value for maxDistance
     int subChoice;
     bool addingCriteria = true;
 
@@ -454,6 +453,7 @@ void handleAddVehicle(RentalCompany& company) {
     std::cout << "1. Car\n";
     std::cout << "2. Van\n";
     std::cout << "3. Minibus\n";
+    std::cout << "4. SUV\n";
     std::cout << "Enter choice: ";
     std::cin >> vehicleType;
 

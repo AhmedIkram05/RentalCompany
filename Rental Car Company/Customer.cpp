@@ -3,66 +3,64 @@
 #include "DateUtils.h"
 #include <algorithm>
 #include <iostream>
-#include <ctime>
-#include <sstream>
-#include <iomanip>
-#include <stdexcept>
 
 // Constructor
-Customer::Customer(int id, const std::string& nm)
-    : customerID(id), name(nm) {}
+Customer::Customer(int id, const std::string& nm) : customerID(id), name(nm), loyaltyPoints(0) {}
 
 // Getters
 int Customer::getCustomerID() const { return customerID; }
 std::string Customer::getName() const { return name; }
 std::vector<RentalInfo> Customer::getRentedVehicles() const { return rentedVehicles; }
+int Customer::getLoyaltyPoints() const { return loyaltyPoints; }
 
 // Rent a vehicle
 void Customer::rentVehicle(const std::shared_ptr<Vehicle>& vehicle, const std::string& rentDate, const std::string& dueDate) {
-    // Check if the vehicle is already rented
-    if (hasRentedVehicle(vehicle)) {
-        throw std::runtime_error("Error: Vehicle ID " + vehicle->getVehicleID() + " is already rented by this customer.");
-    }
-    // Create RentalInfo and add to rentedVehicles
-    RentalInfo info;
-    info.vehicle = vehicle;
-    info.rentDate = rentDate;
-    info.dueDate = dueDate;
-    rentedVehicles.push_back(info);
+    rentedVehicles.push_back({ vehicle, rentDate, dueDate });
 }
 
-// Return a vehicle and return daysLate
+// Return a vehicle
 int Customer::returnVehicle(const std::shared_ptr<Vehicle>& vehicle, const std::string& returnDate) {
-    auto it = std::find_if(rentedVehicles.begin(), rentedVehicles.end(),
-                           [&](const RentalInfo& info) { return info.vehicle->getVehicleID() == vehicle->getVehicleID(); });
+    auto it = std::find_if(rentedVehicles.begin(), rentedVehicles.end(), [&vehicle](const RentalInfo& rental) {
+        return rental.vehicle == vehicle;
+    });
+
     if (it != rentedVehicles.end()) {
-        // Calculate days late using DateUtils
-        int daysLate = DateUtils::daysDifference(it->dueDate, returnDate);
-        // Remove the rental info
+        int daysLate = DateUtils::calculateDaysLate(it->dueDate, returnDate);
         rentedVehicles.erase(it);
+        if (daysLate <= 0) {
+            loyaltyPoints += 10; // Add loyalty points for on-time return
+        }
         return daysLate;
-    } else {
-        throw std::runtime_error("Error: Vehicle ID " + vehicle->getVehicleID() + " not found in rented vehicles.");
     }
+
+    throw std::runtime_error("Vehicle not found in customer's rented vehicles.");
 }
 
 // Display customer information
 void Customer::displayCustomer() const {
-    std::cout << "Customer ID: " << customerID << ", Name: " << name << "\n";
-    if (rentedVehicles.empty()) {
-        std::cout << "No rented vehicles.\n";
-    } else {
-        std::cout << "Rented Vehicles:\n";
-        for (const auto& info : rentedVehicles) {
-            std::cout << "  Vehicle ID: " << info.vehicle->getVehicleID()
-                      << ", Rent Date: " << info.rentDate
-                      << ", Due Date: " << info.dueDate << "\n";
-        }
+    std::cout << "Customer ID: " << customerID << ", Name: " << name << ", Loyalty Points: " << loyaltyPoints << "\n";
+    for (const auto& rental : rentedVehicles) {
+        std::cout << "  Rented Vehicle ID: " << rental.vehicle->getVehicleID() << ", Due Date: " << rental.dueDate << "\n";
     }
 }
 
 // Check if customer has rented a specific vehicle
 bool Customer::hasRentedVehicle(const std::shared_ptr<Vehicle>& vehicle) const {
-    return std::any_of(rentedVehicles.begin(), rentedVehicles.end(),
-                       [&](const RentalInfo& info) { return info.vehicle->getVehicleID() == vehicle->getVehicleID(); });
+    return std::any_of(rentedVehicles.begin(), rentedVehicles.end(), [&vehicle](const RentalInfo& rental) {
+        return rental.vehicle == vehicle;
+    });
+}
+
+// Apply loyalty discount
+bool Customer::applyLoyaltyDiscount() {
+    if (loyaltyPoints >= 100) {
+        loyaltyPoints -= 100;
+        return true;
+    }
+    return false;
+}
+
+// Method to add a RentalInfo directly
+void Customer::addRental(const RentalInfo& rental) {
+    rentedVehicles.push_back(rental);
 }
